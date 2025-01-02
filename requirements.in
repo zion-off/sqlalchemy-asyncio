@@ -1,0 +1,4 @@
+aiosqlite==0.20.0
+alembic==1.14.0
+fastapi[standard]==0.115.6
+sqlalchemy[asyncio]==2.0.36
