@@ -27,9 +27,14 @@ async def create_users(
 
 @router.get(
     "/{user_id}",
-    dependencies=[Depends(JWTBearer())],
     response_model=UserResponse,
     status_code=status.HTTP_200_OK,
 )
-async def get_user_by_id(user_id: int, session: AsyncSession = Depends(get_db)):
-    return await user_service.get_user_by_id(session=session, user_id=user_id)
+async def get_user_by_id(
+    user_id: int,
+    session: AsyncSession = Depends(get_db),
+    token: str = Depends(JWTBearer()),
+):
+    return await user_service.get_user_by_id(
+        session=session, user_id=user_id, token=token
+    )

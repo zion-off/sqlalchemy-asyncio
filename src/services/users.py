@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
 from src.schemas.user import UserCreatePayload
 from src.schemas.common import CommonFilters
+from src.auth.handler import decode_jwt
 
 
 class UserService:
@@ -30,10 +31,11 @@ class UserService:
         res = await session.execute(statement=stm)
         return res.scalars().all()
 
-    async def get_user_by_id(self, session: AsyncSession, user_id: int):
+    async def get_user_by_id(self, session: AsyncSession, user_id: int, token: str):
         stm = select(User).filter(User.id == user_id)
         res = await session.execute(stm).scalar_one()
-        if res:
+        token = decode_jwt(token)
+        if res and token.user_id == user_id:
             return User
         else:
             raise HTTPException(

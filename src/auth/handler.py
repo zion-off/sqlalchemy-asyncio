@@ -6,15 +6,11 @@ JWT_SECRET = "clairo"
 JWT_ALGORITHM = "HS256"
 
 
-def token_response(token: str):
-    return {"access_token": token}
-
-
 def sign_jwt(user_id: str):
     payload = {"user_id": user_id, "expires": time.time() + 1800}
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
-    return token_response(token)
+    return {"access_token": token}
 
 
 def decode_jwt(token: str):
