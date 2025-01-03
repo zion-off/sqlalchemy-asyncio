@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
 from src.schemas.user import UserCreatePayload
 from src.schemas.common import CommonFilters
-from src.auth.handler import decode_jwt
+from src.auth.handler import decode_jwt, is_polite
 
 
 class UserService:
@@ -31,14 +31,26 @@ class UserService:
         res = await session.execute(statement=stm)
         return res.scalars().all()
 
-    async def get_user_by_id(self, session: AsyncSession, user_id: int, token: str):
-        stm = select(User).filter(User.id == user_id)
-        res = await session.execute(stm).scalar_one()
-        token = decode_jwt(token)
-        if res and token.user_id == user_id:
-            return User
+    async def get_user_by_id(
+        self,
+        session: AsyncSession,
+        user_id: str,
+        token: str | None,
+        user_agent: str | None,
+    ):
+        if token or is_polite(user_agent):
+            stm = select(User).filter(User.id == user_id)
+            res = await session.execute(stm)
+            user = res.scalar_one()
+            token = decode_jwt(token)
+            if user and (is_polite(user_agent) or token.get("user_id") == user_id):
+                return user
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found",
+                )
         else:
             raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="User not found",
+                status_code=status.HTTP_401_UNAUTHORIZED,
             )

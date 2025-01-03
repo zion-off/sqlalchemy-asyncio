@@ -1,8 +1,9 @@
-from fastapi import APIRouter, status, Path, Depends
-from typing import List
+from fastapi import APIRouter, status, Path, Depends, Header
+from typing import List, Annotated
 from src.dependencies import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.auth.bearer import JWTBearer
+from src.schemas.common import CommonFilters
 from src.schemas.message import (
     MessageSchema,
     MessageCreateRequest,
@@ -10,35 +11,57 @@ from src.schemas.message import (
     MessageUpdateRequest,
     MessageUpdateResponse,
 )
+from ..services.messages import MessageService
 
 router = APIRouter(prefix="/{room_id}/messages", tags=["Messages"])
 
-
-@router.post(
-    "", dependencies=[Depends(JWTBearer())], response_model=MessageCreateResponse
-)
-async def send_message(body: MessageCreateRequest, room_id: int = Path(...)):
-    pass
+message_service = MessageService()
 
 
-@router.get("", dependencies=[Depends(JWTBearer())], response_model=List[MessageSchema])
-async def get_messages(
-    room_id: int = Path(...), session: AsyncSession = Depends(get_db)
-):
-    pass
-
-
-@router.delete(
-    "/{message_id}",
-    status_code=status.HTTP_200_OK
-)
-async def delete_message(
-    room_id: int = Path(...),
-    message_id: int = Path(...),
+@router.post("", response_model=MessageCreateResponse)
+async def send_message(
+    body: MessageCreateRequest,
     session: AsyncSession = Depends(get_db),
-    token: str = Depends(JWTBearer()),
+    room_id: str = Path(...),
+    token: str | None = Depends(JWTBearer()),
 ):
-    pass
+    return await message_service.create_message(
+        body=body, session=session, room_id=room_id, token=token
+    )
+
+
+@router.get("", response_model=List[MessageSchema])
+async def get_messages(
+    filters: CommonFilters,
+    session: AsyncSession = Depends(get_db),
+    room_id: str = Path(...),
+    token: str | None = Depends(JWTBearer()),
+    user_agent: Annotated[str | None, Header()] = None,
+):
+    return await message_service.list_messages(
+        filters=filters,
+        session=session,
+        room_id=room_id,
+        token=token,
+        user_agent=user_agent,
+    )
+
+
+@router.delete("/{message_id}", status_code=status.HTTP_200_OK)
+async def delete_message(
+    session: AsyncSession = Depends(get_db),
+    room_id: str = Path(...),
+    message_id: str = Path(...),
+    token: str | None = Depends(JWTBearer()),
+    user_agent: Annotated[str | None, Header()] = None,
+):
+    return await message_service.delete_messages(
+        session=session,
+        user_agent=user_agent,
+        room_id=room_id,
+        message_id=message_id,
+        token=token,
+    )
 
 
 @router.patch(
@@ -47,9 +70,17 @@ async def delete_message(
 )
 async def update_message(
     body: MessageUpdateRequest,
-    room_id: int = Path(...),
-    message_id: int = Path(...),
     session: AsyncSession = Depends(get_db),
-    token: str = Depends(JWTBearer()),
+    room_id: str = Path(...),
+    message_id: str = Path(...),
+    token: str | None = Depends(JWTBearer()),
+    user_agent: Annotated[str | None, Header()] = None,
 ):
-    pass
+    return await message_service.update_message(
+        body=body,
+        session=session,
+        user_agent=user_agent,
+        room_id=room_id,
+        message_id=message_id,
+        token=token,
+    )

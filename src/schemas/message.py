@@ -3,12 +3,12 @@ from pydantic import BaseModel
 
 
 class MessageSchema(BaseModel):
+    user_id: str
+    room_id: str
     message: str
-    created_at: str
 
 
 class MessageCreateRequest(BaseModel):
-    user_id: int
     message: str
 
     class Config:
@@ -16,8 +16,9 @@ class MessageCreateRequest(BaseModel):
 
 
 class MessageCreateResponse(BaseModel):
-    user_id: int
-    message_id: int
+    user_id: str
+    room_id: str
+    message_id: str
     message: str
     created_at: datetime
 
@@ -26,7 +27,6 @@ class MessageCreateResponse(BaseModel):
 
 
 class MessageUpdateRequest(BaseModel):
-    message_id: int
     new_message: str
 
     class Config:
@@ -34,13 +34,10 @@ class MessageUpdateRequest(BaseModel):
 
 
 class MessageUpdateResponse(BaseModel):
-    message_id: int
+    message_id: str
+    room_id: str
     old_message: str
-    update_message: str
-    modified_at: datetime
+    updated_message: str
 
     class Config:
         from_attributes = True
-
-
-    

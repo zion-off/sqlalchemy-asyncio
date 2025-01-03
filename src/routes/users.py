@@ -1,4 +1,5 @@
-from fastapi import APIRouter, status, Depends
+from fastapi import APIRouter, status, Depends, Header
+from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.common import CommonFilters
 from src.schemas.user import UserCreatePayload, UserResponse
@@ -31,10 +32,11 @@ async def create_users(
     status_code=status.HTTP_200_OK,
 )
 async def get_user_by_id(
-    user_id: int,
+    user_id: str,
     session: AsyncSession = Depends(get_db),
-    token: str = Depends(JWTBearer()),
+    token: str | None = Depends(JWTBearer()),
+    user_agent: Annotated[str | None, Header()] = None,
 ):
     return await user_service.get_user_by_id(
-        session=session, user_id=user_id, token=token
+        session=session, user_id=user_id, token=token, user_agent=user_agent
     )
