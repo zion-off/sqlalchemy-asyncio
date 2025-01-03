@@ -1,5 +1,4 @@
 from sqlalchemy import select, desc
-from fastapi import HTTPException, status
 from src.schemas.common import CommonFilters
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.room import Room

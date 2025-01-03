@@ -8,7 +8,7 @@ from src.auth.bearer import JWTBearer
 
 from ..services.users import UserService
 
-router = APIRouter(prefix="/api/users")
+router = APIRouter(prefix="/api/users", tags=["Users"])
 
 user_service = UserService()
 

@@ -19,12 +19,3 @@ async def get_db():
         await session.close()
 
 
-async def get_requesting_user(
-        credentials: Annotated[HTTPBasicCredentials, Depends(security)],
-        session: AsyncSession = Depends(get_db)):
-    # TODO
-    # find if any user exists in the database with email == credentials.username
-    # check if user.password_hash == userservice.hash_password(credentials.password)
-    # if true, return the user
-    # else raise exception
-    pass

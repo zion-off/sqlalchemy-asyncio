@@ -1,18 +1,19 @@
 from fastapi import APIRouter, status, Depends
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.dependencies import get_requesting_user
 from src.dependencies import get_db
 from src.schemas.common import CommonFilters
 from src.auth.bearer import JWTBearer
-from src.models.room import Room
 from src.schemas.room import RoomSchema, RoomCreatePayload
+from src.routes.messages import router as messages_router
 
 from ..services.rooms import RoomService
 
 router = APIRouter(
-    prefix="/api/rooms", dependencies=[Depends(get_requesting_user)], tags=["Rooms"]
+    prefix="/api/rooms", tags=["Rooms"]
 )
+
+router.include_router(messages_router)
 
 room_service = RoomService()
 
@@ -31,3 +32,6 @@ async def create_rooms(
     return await room_service.create_room(
         session=session, token=token, room_name=request.room_name
     )
+
+
+

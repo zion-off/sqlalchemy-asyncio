@@ -42,7 +42,5 @@ class MessageUpdateResponse(BaseModel):
     class Config:
         from_attributes = True
 
-class MessageDeleteRequest(BaseModel):
-    message_id: int
 
     

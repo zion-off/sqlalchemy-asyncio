@@ -6,7 +6,7 @@ from src.dependencies import get_db
 
 from ..services.auth import AuthService
 
-router = APIRouter(prefix="/api/auth")
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 auth_service = AuthService()
 
