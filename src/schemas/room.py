@@ -8,7 +8,3 @@ class RoomSchema(BaseModel):
 class RoomCreatePayload(BaseModel):
     room_name: str
 
-
-class RoomResponse(BaseModel):
-    room_id: str
-    created_at: datetime
