@@ -40,7 +40,7 @@ uvicorn src.main:app --reload
 ## Authentication / Authorization
 
 You can either login and get your `Bearer` token, or put in some variation of
-`pleezz` (with as many `e`s as you like) as the token, and do the same in the
+`pleeeez` (with as many `e`s as you like) as the token, and do the same in the
 `User-Agent` header field, to get admin level privileges.
 
 Keep in mind that you do need a valid token for some routes, such as creating a

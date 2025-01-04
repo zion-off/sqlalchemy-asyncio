@@ -110,7 +110,7 @@ class MessageService:
             Message.room_id == room_id, Message.id == message_id
         )
         res = await session.execute(statement=stm)
-        message = res.scalars().first()
+        message = res.scalar_one_or_none()
         if not message:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -122,13 +122,8 @@ class MessageService:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
             )
-        update_stm = (
-            update(Message)
-            .where((Message.room_id == room_id) & (Message.id == message_id))
-            .values(message=body.new_message)
-        )
         old_message = message.message
-        await session.execute(update_stm)
+        message.message = body.new_message
         return MessageUpdateResponse(
             message_id=message.id,
             room_id=message.room_id,

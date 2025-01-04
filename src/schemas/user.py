@@ -1,5 +1,6 @@
 from datetime import datetime
 from pydantic import BaseModel
+from typing import Optional
 
 
 class UserSchema(BaseModel):
@@ -30,3 +31,8 @@ class UserResponse(BaseModel):
         from_attributes = True
 
 
+class UserUpdatePayload(BaseModel):
+    first_name: Optional[str]
+    last_name: Optional[str]
+    email: Optional[str]
+    password: Optional[str]

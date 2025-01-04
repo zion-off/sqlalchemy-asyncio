@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Depends, Header
 from typing import Annotated
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.common import CommonFilters
-from src.schemas.user import UserCreatePayload, UserResponse
+from src.schemas.user import UserCreatePayload, UserResponse, UserUpdatePayload
 from src.dependencies import get_db
 from src.auth.bearer import JWTBearer
 
@@ -39,4 +39,19 @@ async def get_user_by_id(
 ):
     return await user_service.get_user_by_id(
         session=session, user_id=user_id, token=token, user_agent=user_agent
+    )
+
+
+@router.patch(
+    "/{user_id}", response_model=UserCreatePayload, status_code=status.HTTP_200_OK
+)
+async def update_user_by_id(
+    body: UserUpdatePayload,
+    user_id: str,
+    session: AsyncSession = Depends(get_db),
+    token: str | None = Depends(JWTBearer()),
+    user_agent: Annotated[str | None, Header()] = None,
+):
+    return await user_service.update_user(
+        body=body, user_id=user_id, session=session, token=token, user_agent=user_agent
     )
