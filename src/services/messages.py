@@ -1,7 +1,9 @@
-from sqlalchemy import select, desc, delete, update
+from sqlalchemy import select, desc, delete
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.message import Message
+from src.models.room import Room
 from src.schemas.message import (
     MessageCreateRequest,
     MessageCreateResponse,
@@ -49,19 +51,21 @@ class MessageService:
     ):
         if token or is_polite(user_agent):
             stm = (
-                select(Message)
-                .where(Message.room_id == room_id)
+                select(Room)
+                .where(Room.id == room_id)
                 .offset(filters.offset)
                 .limit(filters.page_size)
             )
             if filters.sort_by:
-                stm = (
-                    stm.order_by(desc(filters.sort_by))
-                    if filters.order == "desc"
-                    else stm.order_by(filters.sort_by)
-                )
-            res = await session.execute(statement=stm)
-            return res.scalars().all()
+                if filters.order == "desc":
+                    stm = stm.order_by(desc(filters.sort_by))
+                else:
+                    stm = stm.order_by(filters.sort_by)
+            res = await session.execute(
+                stm.options(selectinload(Room.messages))
+            )
+            room = res.scalar_one_or_none()
+            return room.messages if room else []
         else:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,

@@ -19,5 +19,6 @@ app.include_router(room_router)
 
 
 async def init_db():
+    # "begin once" https://docs.sqlalchemy.org/en/20/tutorial/dbapi_transactions.html
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
