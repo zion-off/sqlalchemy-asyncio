@@ -9,9 +9,8 @@ class LoginPayload(BaseModel):
 
 
 class LoginResponse(BaseModel):
-    access_token: str
+    message: str
 
     class Config:
         from_attributes = True
-
 

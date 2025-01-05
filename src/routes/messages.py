@@ -2,7 +2,7 @@ from fastapi import APIRouter, status, Path, Depends, Header
 from typing import List, Annotated
 from src.dependencies import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.auth.bearer import JWTBearer
+from src.auth.cookie import cookie_check
 from src.schemas.common import CommonFilters
 from src.schemas.message import (
     MessageSchema,
@@ -23,7 +23,7 @@ async def send_message(
     body: MessageCreateRequest,
     session: AsyncSession = Depends(get_db),
     room_id: str = Path(...),
-    token: str | None = Depends(JWTBearer()),
+    token: str | None = Depends(cookie_check),
 ):
     return await message_service.create_message(
         body=body, session=session, room_id=room_id, token=token
@@ -35,7 +35,7 @@ async def get_messages(
     filters: CommonFilters,
     session: AsyncSession = Depends(get_db),
     room_id: str = Path(...),
-    token: str | None = Depends(JWTBearer()),
+    token: str | None = Depends(cookie_check),
     user_agent: Annotated[str | None, Header()] = None,
 ):
     return await message_service.list_messages(
@@ -52,7 +52,7 @@ async def delete_message(
     session: AsyncSession = Depends(get_db),
     room_id: str = Path(...),
     message_id: str = Path(...),
-    token: str | None = Depends(JWTBearer()),
+    token: str | None = Depends(cookie_check),
     user_agent: Annotated[str | None, Header()] = None,
 ):
     return await message_service.delete_messages(
@@ -73,7 +73,7 @@ async def update_message(
     session: AsyncSession = Depends(get_db),
     room_id: str = Path(...),
     message_id: str = Path(...),
-    token: str | None = Depends(JWTBearer()),
+    token: str | None = Depends(cookie_check),
     user_agent: Annotated[str | None, Header()] = None,
 ):
     return await message_service.update_message(

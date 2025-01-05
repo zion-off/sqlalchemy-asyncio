@@ -11,7 +11,7 @@ from src.schemas.message import (
     MessageUpdateResponse,
 )
 from src.schemas.common import CommonFilters
-from src.auth.handler import decode_jwt, is_polite
+from src.auth.cookie import cookie_decrypt, is_polite
 
 
 class MessageService:
@@ -22,10 +22,9 @@ class MessageService:
         room_id: str,
         token: str | None,
     ):
-        if token:
-            token = decode_jwt(token)
+        if token: 
             message = Message(
-                user_id=token.get("user_id"), room_id=room_id, message=body.message
+                user_id=cookie_decrypt(token), room_id=room_id, message=body.message
             )
             session.add(message)
             await session.flush()
@@ -90,7 +89,7 @@ class MessageService:
                 detail="Message not found",
             )
         if not is_polite(user_agent) and (
-            message.user_id != decode_jwt(token).get("user_id")
+            message.user_id != cookie_decrypt(token)
         ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,
@@ -108,7 +107,7 @@ class MessageService:
         user_agent: str | None,
         room_id: str,
         message_id: str,
-        token: str,
+        token: str | None,
     ):
         stm = select(Message).where(
             Message.room_id == room_id, Message.id == message_id
@@ -121,7 +120,7 @@ class MessageService:
                 detail="Message not found",
             )
         if not is_polite(user_agent) and (
-            message.user_id != decode_jwt(token).get("user_id")
+            message.user_id != cookie_decrypt(token)
         ):
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

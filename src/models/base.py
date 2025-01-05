@@ -8,7 +8,7 @@ from sqlalchemy import String, DateTime
 # the `+aiosqlite` tells sqlalchemy which driver to use
 db_url = "sqlite+aiosqlite:///mydb.db"
 # create_async_engine returns an engine for an async object
-engine = create_async_engine(db_url, echo=True)
+engine = create_async_engine(db_url)
 # async_sessionmaker ensures sessions are async
 SessionAsync = async_sessionmaker(engine, expire_on_commit=False)
 

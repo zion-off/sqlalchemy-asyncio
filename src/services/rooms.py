@@ -3,7 +3,7 @@ from sqlalchemy import select, desc
 from src.schemas.common import CommonFilters
 from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.room import Room
-from src.auth.handler import decode_jwt, is_polite
+from src.auth.cookie import cookie_decrypt, is_polite
 
 
 class RoomService:
@@ -11,8 +11,7 @@ class RoomService:
         self, session: AsyncSession, token: str | None, room_name: str
     ):
         if token:
-            token = decode_jwt(token)
-            room = Room(room_name=room_name, created_by=token.get("user_id"))
+            room = Room(room_name=room_name, created_by=cookie_decrypt(token))
             session.add(room)
             await session.flush()
             return room

@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.schemas.common import CommonFilters
 from src.schemas.user import UserCreatePayload, UserResponse, UserUpdatePayload
 from src.dependencies import get_db
-from src.auth.bearer import JWTBearer
+from src.auth.cookie import cookie_check
 
 
 from ..services.users import UserService
@@ -34,7 +34,7 @@ async def create_users(
 async def get_user_by_id(
     user_id: str,
     session: AsyncSession = Depends(get_db),
-    token: str | None = Depends(JWTBearer()),
+    token: str | None = Depends(cookie_check),
     user_agent: Annotated[str | None, Header()] = None,
 ):
     return await user_service.get_user_by_id(
@@ -49,7 +49,7 @@ async def update_user_by_id(
     body: UserUpdatePayload,
     user_id: str,
     session: AsyncSession = Depends(get_db),
-    token: str | None = Depends(JWTBearer()),
+    token: str | None = Depends(cookie_check),
     user_agent: Annotated[str | None, Header()] = None,
 ):
     return await user_service.update_user(

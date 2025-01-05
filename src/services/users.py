@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.models.user import User
 from src.schemas.user import UserCreatePayload, UserUpdatePayload
 from src.schemas.common import CommonFilters
-from src.auth.handler import decode_jwt, is_polite
+from src.auth.cookie import cookie_decrypt, is_polite
 
 
 class UserService:
@@ -42,8 +42,7 @@ class UserService:
             stm = select(User).filter(User.id == user_id)
             res = await session.execute(stm)
             user = res.scalar_one()
-            token = decode_jwt(token)
-            if user and (is_polite(user_agent) or token.get("user_id") == user_id):
+            if user and (is_polite(user_agent) or cookie_decrypt(token) == user_id):
                 return user
             else:
                 raise HTTPException(
@@ -67,7 +66,7 @@ class UserService:
             stm = select(User).filter(User.id == user_id)
             res = await session.execute(stm)
             user = res.scalar_one()
-            if user and (is_polite(user_agent) or token.get("user_id") == user_id):
+            if user and (is_polite(user_agent) or cookie_decrypt(token) == user_id):
                 if body.first_name:
                     user.first_name = body.first_name
                 if body.last_name:
@@ -80,7 +79,7 @@ class UserService:
                     first_name=body.first_name,
                     last_name=body.last_name,
                     email=body.email,
-                    password=body.password
+                    password=body.password,
                 )
             else:
                 raise HTTPException(
